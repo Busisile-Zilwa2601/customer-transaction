@@ -1,9 +1,10 @@
-version: '3.8'
 
 services:
   api-gateway:
-    build: ./api-gateway
-    port:
+    build: 
+      context: ./api-gateway
+    container_name: api-gateway
+    ports:
       - "3000:3000"
     env_file: ./api-gateway/.env
     depends_on:
@@ -16,8 +17,10 @@ services:
       - RABBITMQ_URL=ampq://rabbitmq:5672
 
   auth_service:
-    build: ./auth_service
-    port:
+    build: 
+      context: ./auth_service
+    container_name: auth_service
+    ports:
       - "3001:3001"
     env_file: ./auth_service/.env
     depends_on:
@@ -28,8 +31,10 @@ services:
       - RABBITMQ_URL=ampq://rabbitmq:5672
 
   transaction_service:
-    build: ./transaction_service
-    port:
+    build: 
+      context: ./transaction_service
+    container_name: transaction_service
+    ports:
       - "3002:3002"
     env_file: ./transaction_service/.env
     depends_on:
@@ -40,8 +45,10 @@ services:
       - RABBITMQ_URL=ampq://rabbitmq:5672
 
   account_service:
-    build: ./account_service
-    port:
+    build: 
+      context: ./account_service
+    container_name: account_service
+    ports:
       - "3003:3003"
     env_file: ./account_service/.env
     depends_on:
