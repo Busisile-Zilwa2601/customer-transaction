@@ -2,7 +2,8 @@ import express from "express";
 import { logger } from '../utils/logger';
 import { CacheService } from '../middleware/cacheService';
 import { TransactionService } from '../service/transaction_service';
-import { Filter } from "../intefaces/ITransaction";
+import { Filter, IStatus } from "../intefaces/ITransaction";
+import { ITransaction } from "../models/Transation";
 
 export class TransactionController {
 
@@ -19,6 +20,7 @@ export class TransactionController {
             const startDate = typeof req.query.startDate === "string" ? req.query.startDate : undefined;
             const endDate = typeof req.query.endDate === "string" ? req.query.endDate : undefined;
             const category = typeof req.query.category === "string" ? req.query.category : undefined;
+            const status = typeof req.query.status === "string" ? req.query.status : undefined; 
             const opts: Filter[] = [];
             
             if (startDate) {
@@ -32,18 +34,27 @@ export class TransactionController {
                 opts.push({ field: "category", value: category });
             }
 
-            const user = req.user;
+            if (status) {
+                opts.push({ field: "status", value: status });
+            }
+
+            const user = req.user?.userId;
 
             //build cache key
             const cacheKey = `transactions:${user}:${JSON.stringify({page, pageSize, opts})}`;
-
+            
             //Get the from cache
             const cacheData = await CacheService.get(cacheKey);
-            if(cacheData) {
-                return res.status(200).json({
-                    success: true,
-                    cacheData
-                })
+            if(cacheData !== null && cacheData !== undefined) {
+                const parsed = typeof cacheData === "string" ? JSON.parse(cacheData) : cacheData;
+
+                if(Array.isArray(parsed) ? parsed.length > 0 : Object.keys(parsed).length > 0)
+                {
+                    return res.status(200).json({
+                        success: true,
+                        cacheData
+                    })
+                }
             }
 
             //not cached
@@ -55,6 +66,56 @@ export class TransactionController {
             });
         }catch(err){
             logger.error('Transation error occured', err)
+            res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            });
+        }
+    }
+
+    transaction = async (req: express.Request, res: express.Response): Promise<any> => {
+        try {
+            const authToken = req.token;
+            const user = req.user?.userId;
+            if(!authToken)
+            {
+                logger.error("No Authorization header");
+                return res.status(401).json({ success: false, message: 'Authentication Failed' });
+            }
+            
+            const trans: ITransaction = req.body;
+
+            const result = await this.trans_service.createTransaction(trans, authToken);
+            
+            if(!result){
+                logger.error("nothing return");
+                return res.status(400).json({
+                    success: false,
+                    message: "Bad request"
+                });
+            }
+
+            if(result?.status === IStatus.Failed)
+            {
+                return res.status(400).json({
+                    message: 'Insufficient funds'
+                });
+            }
+
+            //clear cache
+            if(user)
+            {
+                await CacheService.del(user);
+            };
+            
+            logger.info("Succefully created transaction")
+            res.status(200).json({
+                success: true,
+                result
+            });
+
+        } catch (error) {
+            logger.error('Transation error occured', error)
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'

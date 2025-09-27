@@ -1,0 +1,62 @@
+export const transactionMock = [
+    {
+        transactionId: 'c4d1eed5-6c36-46c1-8488-738a2f195ba0',
+        accountId: "c1151719-256c-408f-a816-670370bc73fa",
+        externalId: "ext-12345",
+        bankId: "bank-12345",
+        currency: "ZAR",
+        amount: -115.50,
+        description: "Woolworths",
+        originalDescription: "WOOLWORTHS 12345",
+        marchantName: "Woolworths",
+        category: "Shopping",
+        type: "Debit",
+        marchantId: "woolies-m-12345",
+        locationInfo: {
+            address: "123 Main St",
+            city: "Cape Town",
+            country: "South Africa"
+        },
+        paymentMethod: "Card",
+        date: "2023-10-01T10:00:00Z",
+        status: "Completed ",
+    },
+    {
+        transactionId: 'ad0fe4b3-b451-409b-9c9d-b030594e35d3',
+        accountId: "c1151719-256c-408f-a816-670370bc73fa",
+        externalId: "ext-67890",
+        bankId: "capitec-67890",
+        status: "Completed",
+        currency: "ZAR",
+        amount: 55000.00,
+        description: "Salary Payment",
+        category: "Income",
+        originalDescription: "SALARY OCTOBER",
+        type: "Debit",
+        date: "2023-10-30T00:30:00Z",
+    },
+    {
+        transactionId: '995e41cb-7e64-47ca-9b5a-f3ed8b5004ae',
+        accountId: "c1151719-256c-408f-a816-670370bc73fa",
+        date: "2023-10-31T13:30:00Z",
+        externalId: "netflix-54321",
+        bankId: "capitec-67890",
+        currency: "ZAR",
+        amount: -200.00,
+        type: "Debit",
+        description: "Netflix Subscription",
+        originalDescription: "NETFLIX.COM",
+        marchantName: "Netflix",
+        category: "Entertainment",
+        marchantId: "netflix-54321",
+        subCatergory: "Streaming Service",
+        paymentMethod: "automatic_payment",
+        status: "Completed",
+        metadata: {
+            isRecrring: true,
+            recurrringInterval: "Monthly",
+            started: "2022-01-15",
+            status: "InActive"
+        }
+    }
+];

@@ -3,6 +3,7 @@ import { logger } from '../utils/logger';
 import { validateRegistration, validateLogin } from "../utils/validate";
 import { AuthService } from '../service/auth_service';
 import { IUser } from '../interfaces/auth_interface';
+import { publishEvent } from "../middleware/messagingSevice";
 
 export class AuthController {
     private auth_service: AuthService;
@@ -46,6 +47,11 @@ export class AuthController {
             const {accessToken, refreshToken, user_id} = await this.auth_service.createUser(newUser);
             logger.info(`User successfully created id: ${user_id}`);
             
+            await publishEvent('account.create', {
+                userId: user_id,
+                createdAt: Date.now
+            });
+
             return res.status(201).json({
                 success: true,
                 message: 'User successfully created',
@@ -72,6 +78,7 @@ export class AuthController {
                     message: error.details[0].message
                 });
             }
+            console.log("value", value);
 
             const { identifier, password } = value;
             const results = await this.auth_service.loginUser(identifier, password);

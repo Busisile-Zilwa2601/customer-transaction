@@ -4,13 +4,20 @@ export enum IAccountType {
 };
 
 export enum IStatus {
-    Pending, 
-    Completed,
-    Cancelled,
-    Failed
+    Pending = "Pending", 
+    Completed = "Completed",
+    Cancelled = "Cancelled",
+    Failed = "Failed"
 }
 
 export interface Filter {
     field: string,
     value: any
+}
+
+export interface IAccount {
+    userId: string,
+    accountId: string,
+    type: string
+    balance: number;
 }

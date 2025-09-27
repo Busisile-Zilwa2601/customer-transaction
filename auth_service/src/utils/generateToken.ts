@@ -13,10 +13,12 @@ export const generateToken = async(user: IAuthModel) => {
         userId: user.id,
         username: user.username
     }, secret, {expiresIn: '60min'});
-
+    
+    await RefreshToken.deleteMany({user: user.id});
+    
     const refreshToken = crypto.randomBytes(40).toString('hex');
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    expiresAt.setDate(expiresAt.getDate() + 1);
 
     await RefreshToken.create({
         token: refreshToken,
@@ -27,6 +29,13 @@ export const generateToken = async(user: IAuthModel) => {
     return { accessToken, refreshToken }
 }
 
+export const getRefreshTokenById = async(id: string): Promise<IRefreshToken> => {
+    const storedToken = await RefreshToken.findOne({user: id}); 
+    if(!storedToken) {
+        throw new DocumentNotFoundError("Refresh token not found");
+    } 
+    return storedToken; 
+}
 
 export const getRefreshToken = async(token: string): Promise<IRefreshToken> => {
     const storedToken = await RefreshToken.findOne({token: token});
