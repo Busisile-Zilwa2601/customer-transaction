@@ -8,6 +8,7 @@ import Redis from "ioredis";
 import RedisStore, { RedisReply } from "rate-limit-redis";
 import { logger } from './utils/logger';
 import { errorHandler } from "./middleware/errorHandler";
+import { validateToken } from "./middleware/authVaildator";
 
 const app = express();
 dotenv.config();
@@ -68,9 +69,32 @@ app.use('/v1/auth', proxy(process.env.AUTH_SERVICE_URL as string, {
 }));
 
 
+//Transaction proxy
+app.use('/v1/transactions', validateToken, proxy(process.env.TRANSACTION_SERVICE_URL as string, {
+    ...proxyOptions,
+    proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+        const originaAuthHeader = srcReq.headers['authorization'];
+        if(originaAuthHeader) {
+            proxyReqOpts.headers['authorization'] = originaAuthHeader;
+        }
+
+        if(srcReq.user && srcReq.user.userId)
+        {
+            proxyReqOpts.headers['x-user-id'] = srcReq.user.userId;
+        }
+        proxyReqOpts.headers["Content-Type"]="application/json";
+        return proxyReqOpts
+    },
+     userResDecorator: ( proxyRes, proxyResData, userReq, userRes) => { 
+        logger.info(`Response received from TransactionService: ${proxyRes.statusCode}`);
+        return proxyResData;
+    }
+}));
+
 app.use(errorHandler);
 
 app.listen(PORT, ()=>{
     logger.info(`API Gateway is running on port ${PORT}`);
     logger.info(`AuthService is running on port ${process.env.AUTH_SERVICE_URL}`);
+    logger.info(`TransactionService is running on port ${process.env.TRANSACTION_SERVICE_URL}`);
 });

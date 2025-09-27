@@ -17,7 +17,11 @@ export class CacheService {
         await redisClient.set(key, JSON.stringify(value), 'EX', 3600);
     }
 
-    static async del(key: string): Promise<void> {
-        await redisClient.del(key);
+    static async del(user: string): Promise<void> {
+        const key = `transactions:${user}:*`;
+        if(key.length > 0)
+        {
+            await redisClient.del(key);
+        }
     }
 }

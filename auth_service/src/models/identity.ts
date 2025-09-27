@@ -7,7 +7,7 @@ export interface IAuthModel extends mongoose.Document {
     lastname: string,
     username: string,
     email: string,
-    role: Role,
+    //role: Role,
     accountId: string,
     authentication: {
         password: string;

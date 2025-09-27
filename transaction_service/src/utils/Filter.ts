@@ -22,17 +22,19 @@ export function buildFilter( filters?: Filter[]) {
         }
     });
 
-    if(startDate || endDate){
-        mQuery.date = {};
-        if(startDate)
-        {
-            mQuery.date.$gte = new Date(startDate);
-        }
-        if(endDate)
-        {
-            mQuery.date.$gte = new Date(endDate);
-
-        }
+    mQuery.date = {};
+    if(startDate)
+    {
+        mQuery.date.$gte = new Date(startDate);
+    }
+    if(endDate)
+    {
+        mQuery.date.$lte = new Date(endDate);
+    }
+    
+    if(Object.keys(mQuery.date).length === 0)
+    {
+        delete mQuery.date;
     }
 
     return mQuery;

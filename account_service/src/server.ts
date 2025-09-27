@@ -3,16 +3,16 @@ import helmet from "helmet";
 import cors from 'cors';
 import dotenv from "dotenv";
 import { logger } from "./utils/logger";
-import router from "./routes/transaction_routes";
+import { handleAccountCreated } from "./utils/event_handler";
+import router from "./routes/account.routes";
 import { errorHandler } from "./middleware/errorHandler";
 import { connect, consumeEvent, publishEvent } from "./middleware/messagingSevice";
 import { connectDB } from "./context/db";
-import { handleTransaction } from "./utils/event_handler";
-import { transactionMock } from "./mockdata/transaction.mock";
+import { accountMock } from "./mockData/account_mock";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3003;
 
 //middleware
 app.use(helmet());
@@ -25,7 +25,7 @@ app.use((req, res, next)=>{
 });
 
 //Main routes
-app.use('/api/transactions/', router());
+app.use('/api/account/', router());
 
 //Error handler
 app.use(errorHandler);
@@ -33,19 +33,25 @@ app.use(errorHandler);
 const startServer = async ()=>{
     try {
         await connectDB();
+        
         await connect();
-        await consumeEvent('transaction.create', handleTransaction);
-
+        
+        await consumeEvent('account.create', handleAccountCreated);
+        
         if(process.env.NODE_ENV == 'development'){
-            //publish mock event
-            for(let transaction in transactionMock){
-                await publishEvent('transaction.create', transactionMock[transaction]);
-            }
+            await publishEvent('account.create', accountMock)
+            .then(()=>{
+                logger.info("Mock account creation event published");
+            })
+            .catch((err)=>{
+                logger.error("Failed to publish mock account creation event", err);
+            });
         }
 
         app.listen(PORT, ()=>{
-            logger.info(`TransactionService is running on port ${PORT}`);
+            logger.info(`AccountService is running on port ${PORT}`);
         });
+
     } catch (error) {
         logger.error("Failed to connnec to server", error);
         process.exit(1)

@@ -6,7 +6,6 @@ import { AuthContext } from "../context/auth_context";
 import { IUser, Role } from "../interfaces/auth_interface";
 import { AuthModel } from '../models/identity';
 import { generateToken, getRefreshToken, deleteRefreshToken, deleteRefreshTokenById } from "../utils/generateToken";
-//import { publishEvent } from '../middleware/rabbitMq';
 
 export class AuthService {
     private auth_context: AuthContext;
@@ -21,8 +20,6 @@ export class AuthService {
         const hashPassword = authentication(values.password, salt);
         const user = new AuthModel({
             id: crypto.randomUUID(),
-            // accountId: crypto.randomUUID(),
-            // role: values.role ?? Role.client,
             firstname: values.firstname,
             lastname: values.lastname,
             username: values.username,
@@ -41,13 +38,6 @@ export class AuthService {
         }
         
         const {accessToken, refreshToken } = await generateToken(savedUser);
-        
-        //let clientName = `${savedUser.firstname} ${savedUser.lastname}`;
-        // await publishEvent('user.register', {
-        //     email: savedUser.email,
-        //     clientname: clientName,
-        //     template: 'User Registration'
-        // });
 
         let user_id = savedUser.id
         return { accessToken, refreshToken, user_id};
@@ -69,7 +59,8 @@ export class AuthService {
 
     loginUser = async (identifier: string, password: string): Promise<any> => {
         const user = await this.auth_context.getUser(identifier).select('+authentication.password +authentication.salt');
-
+        console.log("user: ", user);
+        
         if(!user) {
            logger.warn('User not found', identifier);
             throw new Error('User not found');
